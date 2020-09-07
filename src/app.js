@@ -13,13 +13,17 @@ const repositories = [];
 app.get("/repositories", (request, response) => {
   const { title, url, techs, likes } = request.query;
 
-  return response.json({ title, url, techs });
+  const results = title
+        ? repositories.filter(repository => repository.title.includes(title))
+        : repositories;
+  
+  return response.json(results);
 });
 
 app.post("/repositories", (request, response) => {
-  const { title, url, techs, likes } = request.body;
+  const { title, url, techs } = request.body;
 
-  const repository = { id: uuid(), title, url, techs, likes };
+  const repository = { id: uuid(), title, url, techs, likes: 0 };
 
   repositories.push(repository);
 
@@ -30,7 +34,7 @@ app.put("/repositories/:id", (request, response) => {
   const { id } = request.params;
   const { title, url, techs, likes } = request.body;
 
-  const Index = projects.findIndex(project => project.id == id);
+  const Index = repositories.findIndex(repository => repository.id == id);
 
   if (Index < 0) {
     return response.status(400).json({ erro: 'Repository not found' })
@@ -41,7 +45,7 @@ app.put("/repositories/:id", (request, response) => {
     title,
     url,
     techs,
-    likes: 0,
+    likes,
   };
 
   repositories[Index] = repository;
@@ -52,7 +56,7 @@ app.put("/repositories/:id", (request, response) => {
 app.delete("/repositories/:id", (request, response) => {
   const { id } = request.params;
 
-  const Index = repositories.findIndex(repository => repository.id == Index);
+  const Index = repositories.findIndex(repository => repository.id == id);
 
   if (Index < 0) {
     return response.status(400).json({ erro: 'Repository not found.' })
@@ -67,19 +71,13 @@ app.post("/repositories/:id/like", (request, response) => {
   const { id } = request.params;
   const { title, url, techs, likes } = request.body;
 
-  const Index = projects.findIndex(project => project.id == id);
+  const Index = repositories.findIndex(repository => repository.id == id);
 
   if (Index < 0) {
     return response.status(400).json({ erro: 'Repository not found' })
   }
 
-  const repository = {
-    id,
-    title,
-    url,
-    techs,
-    likes: likes +1,
-  };
+  const repository = { id: id, title: title, url: url, techs: techs, likes: likes+1 };
 
   repositories[Index] = repository;
 
@@ -87,3 +85,7 @@ app.post("/repositories/:id/like", (request, response) => {
 });
 
 module.exports = app;
+
+app.listen(3333, () => {
+  console.log('BckNd started (╯°□°）╯︵ ┻━┻');
+});
